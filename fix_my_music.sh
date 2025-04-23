@@ -7,7 +7,6 @@
 # in the format: Artist - Album (Year)
 # It supports dry run mode and automatic tagging using MusicBrainz.
 # Works on Arch, Debian/Ubuntu, and macOS.
-# Uses a Python virtual environment to avoid system-level pip issues.
 # ==============================================
 
 # -------- Configuration --------
@@ -18,9 +17,12 @@ RENAME_COUNT=0
 DELETE_COUNT=0
 SKIP_COUNT=0
 TOTAL_COUNT=0
+TOTAL_AUDIO_FILES=0
+RENAMED_AUDIO_FILES=0
 SKIPPED_FOLDERS=()
 RENAMED_FOLDERS=()
 DELETED_FOLDERS=()
+START_TIME=$(date +%s)
 # --------------------------------
 
 # -------- Dependency Check --------
@@ -111,6 +113,9 @@ for dir in */; do
     echo "📁 Processing: $dir"
     echo "────────────"
 
+    audio_files_in_dir=$(find "$dir" -maxdepth 1 \( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.wav" -o -iname "*.ogg" -o -iname "*.m4a" -o -iname "*.aac" \) | wc -l)
+    ((TOTAL_AUDIO_FILES+=audio_files_in_dir))
+
     found_file=""
     for ext in "${SUPPORTED_EXTENSIONS[@]}"; do
         found_file=$(find "$dir" -maxdepth 1 -iname "*.${ext}" | head -n 1)
@@ -168,6 +173,7 @@ for dir in */; do
     echo "🟢 Renaming: '$dir' → '$new_name'"
     RENAMED_FOLDERS+=("$dir → $new_name")
     ((RENAME_COUNT++))
+    ((RENAMED_AUDIO_FILES+=audio_files_in_dir))
     if [[ "$DRY_RUN" == false ]]; then
         if [[ -d "$new_name" ]]; then
             echo "⚠️  Destination folder already exists. Skipping."
@@ -180,15 +186,23 @@ for dir in */; do
     echo "────────────"
 done
 
-# -------- Full Visual Summary --------
+# -------- Improved Summary --------
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+DURATION_FORMATTED=$(printf '%02d:%02d:%02d\n' $((DURATION/3600)) $((DURATION%3600/60)) $((DURATION%60)))
+RENAME_PERCENT=$((RENAME_COUNT * 100 / TOTAL_COUNT))
+
 echo
 echo "============================================="
 echo "📊 Operation summary:"
 echo "🛠️  Mode: $MODE_LABEL"
-echo "📁 Total folders scanned : $TOTAL_COUNT"
-echo "🟢 Folders renamed        : $RENAME_COUNT"
-echo "🔴 Folders deleted        : $DELETE_COUNT"
-echo "🟡 Folders skipped        : $SKIP_COUNT"
+echo "⏱️  Duration: $DURATION_FORMATTED"
+echo "📦 Folders scanned     : $TOTAL_COUNT"
+echo "🎵 Music files found   : $TOTAL_AUDIO_FILES"
+echo "🟢 Folders renamed     : $RENAME_COUNT (${RENAME_PERCENT}%)"
+echo "🔴 Folders deleted     : $DELETE_COUNT"
+echo "🟡 Folders skipped     : $SKIP_COUNT"
+echo "💿 Music files in renamed folders: $RENAMED_AUDIO_FILES"
 
 if [ ${#SKIPPED_FOLDERS[@]} -gt 0 ]; then
     echo
@@ -222,10 +236,13 @@ if [[ "$save_log" =~ ^[Yy]$ ]]; then
     (
         echo "📊 Operation summary:"
         echo "🛠️  Mode: $MODE_LABEL"
-        echo "📁 Total folders scanned : $TOTAL_COUNT"
-        echo "🟢 Folders renamed        : $RENAME_COUNT"
-        echo "🔴 Folders deleted        : $DELETE_COUNT"
-        echo "🟡 Folders skipped        : $SKIP_COUNT"
+        echo "⏱️  Duration: $DURATION_FORMATTED"
+        echo "📦 Folders scanned     : $TOTAL_COUNT"
+        echo "🎵 Music files found   : $TOTAL_AUDIO_FILES"
+        echo "🟢 Folders renamed     : $RENAME_COUNT (${RENAME_PERCENT}%)"
+        echo "🔴 Folders deleted     : $DELETE_COUNT"
+        echo "🟡 Folders skipped     : $SKIP_COUNT"
+        echo "💿 Music files in renamed folders: $RENAMED_AUDIO_FILES"
         echo
         if [ ${#SKIPPED_FOLDERS[@]} -gt 0 ]; then
             echo "🟡 Skipped folders and reasons:"
