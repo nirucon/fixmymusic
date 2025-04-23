@@ -180,7 +180,7 @@ for dir in */; do
     echo "────────────"
 done
 
-# -------- Summary (moved to end) --------
+# -------- Full Visual Summary --------
 echo
 echo "============================================="
 echo "📊 Operation summary:"
@@ -195,6 +195,20 @@ if [ ${#SKIPPED_FOLDERS[@]} -gt 0 ]; then
     echo "🟡 Skipped folders and reasons:"
     for reason in "${SKIPPED_FOLDERS[@]}"; do
         echo "   - $reason"
+    done
+fi
+if [ ${#DELETED_FOLDERS[@]} -gt 0 ]; then
+    echo
+    echo "🔴 Deleted folders:"
+    for d in "${DELETED_FOLDERS[@]}"; do
+        echo "   - $d"
+    done
+fi
+if [ ${#RENAMED_FOLDERS[@]} -gt 0 ]; then
+    echo
+    echo "🟢 Renamed folders:"
+    for r in "${RENAMED_FOLDERS[@]}"; do
+        echo "   - $r"
     done
 fi
 echo "============================================="
