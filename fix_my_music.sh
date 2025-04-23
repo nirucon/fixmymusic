@@ -180,8 +180,10 @@ for dir in */; do
     echo "────────────"
 done
 
-# -------- Summary --------
-echo "\n📊 Operation summary:"
+# -------- Summary (moved to end) --------
+echo
+echo "============================================="
+echo "📊 Operation summary:"
 echo "🛠️  Mode: $MODE_LABEL"
 echo "📁 Total folders scanned : $TOTAL_COUNT"
 echo "🟢 Folders renamed        : $RENAME_COUNT"
@@ -189,11 +191,13 @@ echo "🔴 Folders deleted        : $DELETE_COUNT"
 echo "🟡 Folders skipped        : $SKIP_COUNT"
 
 if [ ${#SKIPPED_FOLDERS[@]} -gt 0 ]; then
-    echo "\n🟡 Skipped folders and reasons:"
+    echo
+    echo "🟡 Skipped folders and reasons:"
     for reason in "${SKIPPED_FOLDERS[@]}"; do
         echo "   - $reason"
     done
 fi
+echo "============================================="
 
 # -------- Optional Logging --------
 echo
